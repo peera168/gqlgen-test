@@ -14,12 +14,30 @@ import (
 
 // CreateTodo is the resolver for the createTodo field.
 func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+	r.nextID++
+	todo := &model.Todo{
+		ID:   fmt.Sprintf("T%d", r.nextID),
+		Text: input.Text,
+		User: &model.User{ID: input.UserID, Name: "user " + input.UserID},
+	}
+	r.todos = append(r.todos, todo)
+	return todo, nil
+}
+
+// DeleteTodo is the resolver for the deleteTodo field.
+func (r *mutationResolver) DeleteTodo(ctx context.Context, id string) (bool, error) {
+	for i, t := range r.todos {
+		if t.ID == id {
+			r.todos = append(r.todos[:i], r.todos[i+1:]...)
+			return true, nil
+		}
+	}
+	return false, fmt.Errorf("todo %s not found", id)
 }
 
 // Todos is the resolver for the todos field.
 func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+	return r.todos, nil
 }
 
 // Mutation returns MutationResolver implementation.
